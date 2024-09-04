@@ -1,0 +1,3 @@
+[submodule "src/jup-instruction-parser"]
+	path = src/jup-instruction-parser
+	url = git@github.com:jup-ag/instruction-parser.git
