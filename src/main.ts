@@ -3,7 +3,7 @@ import {augmentBlock} from '@subsquid/solana-objects'
 import {DataSourceBuilder, SolanaRpcClient} from '@subsquid/solana-stream'
 import {TypeormDatabase} from '@subsquid/typeorm-store'
 import * as tokenProgram from './abi/tokenProgram'
-import * as raydium from './abi/raydium'
+import * as raydium from './abi/675kPX9MHTjS2zt1qfr1NYHuzeLXfQM9H24wFSUt1Mp8_265533223'
 //import { Exchange, SolTrade, TokenTrade, JupSignature } from './model'
 import { DecodedInstruction } from './abi/abi.support'
 import * as dotenv from 'dotenv';
@@ -111,7 +111,7 @@ run(dataSource, database, async ctx => {
     for (let block of blocks) {
         for (let ins of block.instructions) {
 
-            console.log("INS: ", ins.d8);
+            //console.log("INS: ", ins.d8);
             
             const operations = [
                 { name: 'swapBaseIn', d8: raydium.instructions.swapBaseIn.d8 },
@@ -130,32 +130,25 @@ run(dataSource, database, async ctx => {
                         console.log("SWAP BASE IN ------------------------------------------------------------------------");
                         let swapBaseIn = raydium.instructions.swapBaseIn.decode({accounts: ins.accounts, data: ins.data});
                         console.log(swapBaseIn);
-
-                        console.log("SwapBaseIn Details:");
-                        console.log("--------------------------------------------------");
-                        console.log("| Parameter       | Value                         |");
-                        console.log("|-----------------|-------------------------------|");
-                        console.log(`| amountIn        | ${swapBaseIn.data.amountIn.toString().padEnd(29)} |`);
-                        console.log(`| minAmountOut    | ${swapBaseIn.data.minimumAmountOut.toString().padEnd(29)} |`);
-                        console.log("--------------------------------------------------");
                         break;
                     case 'swapBaseOut':
                         console.log("SWAP BASE OUT ------------------------------------------------------------------------");
                         let swapBaseOut = raydium.instructions.swapBaseOut.decode({accounts: ins.accounts, data: ins.data});
                         console.log(swapBaseOut);
                         break;
-                    case 'deposit':
-                        console.log("DEPOSIT ------------------------------------------------------------------------");
-                        //console.log(ins);
+                    // case 'deposit':
+                    //     console.log("DEPOSIT ------------------------------------------------------------------------");
+                    //     //console.log(ins);
+                    //     console.log(ins.getTransaction().signatures);
 
-                        try {   
-                            let deposit = raydium.instructions.deposit.decode({accounts: ins.accounts, data: ins.data});
-                            console.log(deposit);
-                        } catch (error) {
-                            console.error("Error decoding deposit:", error);
-                        }
+                    //     try {   
+                    //         let deposit = raydium.instructions.deposit.decode({accounts: ins.accounts, data: ins.data});
+                    //         console.log(deposit);
+                    //     } catch (error) {
+                    //         console.error("Error decoding deposit:", error);
+                    //     }
 
-                        break;
+                    //     break;
                     case 'withdraw':
                         console.log("WITHDRAW ------------------------------------------------------------------------");
 
@@ -168,7 +161,7 @@ run(dataSource, database, async ctx => {
                         break;
                 }
             } else {
-                console.log("No matching operation found");
+                //console.log("No matching operation found");
             }
 
             // https://read.cryptodatabytes.com/p/starter-guide-to-solana-data-analysis
