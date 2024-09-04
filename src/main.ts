@@ -27,7 +27,7 @@ const dataSource = new DataSourceBuilder()
         }),
         strideConcurrency: 1000
     })
-    .setBlockRange({from: 225000000})
+    .setBlockRange({from: 226600000})
     .setFields({
         block: { // block header fields
             timestamp: true
@@ -58,7 +58,7 @@ const dataSource = new DataSourceBuilder()
     .addInstruction({
         // select instructions, that:
         where: {
-            programId: [raydium.programId], 
+            //programId: [raydium.programId], 
             d8: [
                 raydium.instructions.swapBaseIn.d8,
                 raydium.instructions.swapBaseOut.d8,
@@ -103,55 +103,79 @@ run(dataSource, database, async ctx => {
     // with convenient getters for derived data (e.g. `Instruction.d8`).
     let blocks = ctx.blocks.map(augmentBlock)
 
-    let exchanges: Exchange[] = []
-    let solTrades: SolTrade[] = []
-    let tokenTrades: TokenTrade[] = []
-    let jupSignatures: JupSignature[] = []
+    // let exchanges: Exchange[] = []
+    // let solTrades: SolTrade[] = []
+    // let tokenTrades: TokenTrade[] = []
+    // let jupSignatures: JupSignature[] = []
 
     for (let block of blocks) {
         for (let ins of block.instructions) {
-            // https://read.cryptodatabytes.com/p/starter-guide-to-solana-data-analysis
-            if (ins.programId === raydium.programId && ins.inner.length > 1) {
 
-                console.log("PROCESSING NEW TX#  +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++");
+            console.log("INS: ", ins.d8);
+            
+            const operations = [
+                { name: 'swapBaseIn', d8: raydium.instructions.swapBaseIn.d8 },
+                { name: 'swapBaseOut', d8: raydium.instructions.swapBaseOut.d8 },
+                { name: 'deposit', d8: raydium.instructions.deposit.d8 },
+                { name: 'withdraw', d8: raydium.instructions.withdraw.d8 }
+            ];
 
-                if(ins.d8 === raydium.instructions.swapBaseIn.d8) {
+            const matchedOperation = operations.find(op => op.d8 === ins.d8);
 
-                    console.log("SWAP BASE IN ------------------------------------------------------------------------");
+            if (matchedOperation) {
+                console.log(`Matched operation: ${matchedOperation.name}`);
+                
+                switch (matchedOperation.name) {
+                    case 'swapBaseIn':
+                        console.log("SWAP BASE IN ------------------------------------------------------------------------");
+                        let swapBaseIn = raydium.instructions.swapBaseIn.decode({accounts: ins.accounts, data: ins.data});
+                        console.log(swapBaseIn);
 
-                    let swap = raydium.instructions.swapBaseIn.decode({accounts: ins.accounts, data: ins.data});
+                        console.log("SwapBaseIn Details:");
+                        console.log("--------------------------------------------------");
+                        console.log("| Parameter       | Value                         |");
+                        console.log("|-----------------|-------------------------------|");
+                        console.log(`| amountIn        | ${swapBaseIn.data.amountIn.toString().padEnd(29)} |`);
+                        console.log(`| minAmountOut    | ${swapBaseIn.data.minimumAmountOut.toString().padEnd(29)} |`);
+                        console.log("--------------------------------------------------");
+                        break;
+                    case 'swapBaseOut':
+                        console.log("SWAP BASE OUT ------------------------------------------------------------------------");
+                        let swapBaseOut = raydium.instructions.swapBaseOut.decode({accounts: ins.accounts, data: ins.data});
+                        console.log(swapBaseOut);
+                        break;
+                    case 'deposit':
+                        console.log("DEPOSIT ------------------------------------------------------------------------");
+                        //console.log(ins);
 
-                    console.log(swap);
+                        try {   
+                            let deposit = raydium.instructions.deposit.decode({accounts: ins.accounts, data: ins.data});
+                            console.log(deposit);
+                        } catch (error) {
+                            console.error("Error decoding deposit:", error);
+                        }
+
+                        break;
+                    case 'withdraw':
+                        console.log("WITHDRAW ------------------------------------------------------------------------");
+
+                        try {       
+                            let withdraw = raydium.instructions.withdraw.decode({accounts: ins.accounts, data: ins.data});
+                            console.log(withdraw);
+                        } catch (error) {
+                            console.error("Error decoding withdraw:", error);
+                        }
+                        break;
                 }
-
-                if (ins.d8 === raydium.instructions.swapBaseOut.d8) {
-
-                    console.log("SWAP BASE OUT ------------------------------------------------------------------------");
-
-                    let swap = raydium.instructions.swapBaseOut.decode({accounts: ins.accounts, data: ins.data});
-
-                    console.log(swap);
-                }
-
-                if (ins.d8 === raydium.instructions.deposit.d8) {
-                    console.log("DEPOSIT ------------------------------------------------------------------------");
-
-                    let deposit = raydium.instructions.deposit.decode({accounts: ins.accounts, data: ins.data });
-
-                    console.log(deposit);
-                }
-
-                if (ins.d8 === raydium.instructions.withdraw.d8) {
-                    console.log("WITHDRAW ------------------------------------------------------------------------");
-
-                    let withdraw = raydium.instructions.withdraw.decode({accounts: ins.accounts, data: ins.data });
-
-                    console.log(withdraw);
-                }
+            } else {
+                console.log("No matching operation found");
             }
+
+            // https://read.cryptodatabytes.com/p/starter-guide-to-solana-data-analysis
+ 
         }
     } 
 
-    await ctx.store.upsert(solTrades);
+    //await ctx.store.upsert(solTrades);
 
 })
